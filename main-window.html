@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+  <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Simple Photo Renamer</title>
+        <link rel="stylesheet" href="./css/constants.css">        
+        <style>
+            * {
+                box-sizing:border-box;
+            }
+
+            body {
+                width:100%;
+                margin:0;
+                height:100%;
+                font-family:'Segoe UI';
+            }
+
+            div#mainapp {
+                display:flex;                
+                width:100%;
+            }
+             main.content {
+                flex:1;
+                position:relative;
+                overflow:hidden;
+            }
+
+            footer, header, main,nav, section
+            {
+                display:block;
+            }
+            .content>.spa-section {
+                position:absolute;
+                top:0;
+                left:0;
+                right:0;
+                bottom:0;
+                overflow:auto;
+                visibility:hidden;
+                display:none;
+            }
+
+            .spa-section.is-shown {
+                visibility:visible;
+                display:block;
+            }
+            .nav {
+                width:25%;
+                overflow-x:hidden;
+                overflow-y:auto;
+                border-right:1px solid black;
+            }
+            .nav-button{
+                display:block;
+                width:100%;
+                padding:1em;
+            }
+
+            .nav-button.is-selected {
+                background-color:black;
+                color:white;
+            }
+
+            div.photoframe {
+                height:100%;
+                width:100%;
+            }
+            div.photoframe>img {
+                height:50%;
+                width:50%;
+            }
+            div.list {
+                overflow-y:auto;
+                height:340px;
+                width:100%;
+            }
+            div.row>div { 
+                float:left;
+                padding-left:1em;
+            }
+            .busylist {
+                display:none
+            }
+            .busylist.is-shown {
+                position:'absolute';
+                top:0;
+                left:0;
+                height:100%;
+                width:100%;
+                display:flex   ;             
+                justify-content:center;
+                align-items:center;
+                background-color:lightslategray;
+                opacity:0.75;
+                animation: blink 3s linear infinite;
+            }
+            @keyframes blink {
+                50% {
+                    opacity:0;
+                }
+            }            
+            div.list>.row {
+                width:100%;
+                padding-left:1em; 
+                display:inline-block;
+                background-color:white;
+                color:black;
+                font-size:12pt;
+            }
+            div.list>.row:after {
+                content:"";
+                display:block;
+                clear: both;
+                visibility:hidden;
+            }
+            div.list>.row:hover {
+                background-color:gray;
+            }
+            div.list>.row.is-selected {
+                background-color:black;
+                color:white;
+            }
+            div.edit {
+                width:100%;
+            }
+            div.edit>input[type='text'] {
+                width:100%
+            }
+            div.buttonrow {
+                font-size:9pt
+
+            }
+            div.buttonrow>div, div.buttonrow>button { 
+                float:left;
+                padding-left:1em;
+                background-color:aquamarine;
+            }
+            div.buttonrow>div:hover { 
+                background-color:aqua;
+            }
+            div.script {
+                overflow:auto;
+                background-color:thistle;
+                font-family:Courier, monospace;
+                font-size:8pt;
+                padding-left:1%;
+                display:block;
+            }
+            .script> div {
+                display:block;
+            }
+        </style>
+
+        <script src="./node_modules/vue/dist/vue.js"></script>
+        <script src="./main-window-renderer.js"></script>
+    </head>
+    <body>
+        <div id="mainapp">
+            <nav class="nav is-shown" v-on:click='navClick'>
+                <header class="nav-header"><h1 class="nav-title">Simple E-Photo Copier</h1></header>
+                <div class="nav-item">
+                    <h4 class="nav-category">File Edits</h4>
+                    <button v-on:click="openClick" type="button" data-section="filesection" class="nav-button">Select Files</button>
+                    <button type="button" data-section="copylistsection" class="nav-button">Copy List</button>
+                    <button type="button" data-section="scriptsection" class="nav-button">Show Script</button>
+                </div>
+                <div class="nav-item">
+                    <h4 class="nav-category">Batch Edits</h4>
+                    <button v-on:click='openFolderClick' type="button" data-section="foldersection" class="nav-button">Select Folder</button>
+                    <button type="button" data-section="pointertosectionid" class="nav-button">Copy</button>
+                    <button type="button" data-section="pointertosectionid" class="nav-button">New Folder</button>
+                </div>            
+            </nav>  
+
+            <main class="content">  
+                <section id="aboutsection" class="spa-section is-shown">
+                    <h2>Simple Photo Copier</h2>
+                    <p>Powered by Electron.js and Vue.js, created by B3E Technologies LLC</p>
+                    <p>Select a command on the navigation panel or</p>
+                    <button type="button" data-section="helpsection" v-on:click='showDataSection'>Show usage</button>
+                </section>
+                <section id="helpsection" class="spa-section">
+                    <h1>Basic Usage</h1>
+                    <ol>
+                        <li>Select files from navigation menu</li>
+                        <li>Click a file in the list of chosen files</li>
+                        <li>Manipulate the template in the editor panel at the bottom</li>
+                        <li>Use file and metadata tags to create a pattern with file-specific properties</li>
+                        <li>Use the category literals or type in the text box to add fixed strings</li>
+                        <li>Click Copy Script to see what will eventually happen</li>
+                    </ol>
+                    <button type="button" v-on:click='backClick'>Back</button>
+                </section>
+                <section id="filesection" class="spa-section">
+                    <div class="list">
+                        <div class="busylist">Loading ...</div> 
+                        <div v-bind:id="pathmode+'-'+imagepath.id" class="row" 
+                             v-for="imagepath in pathlist" v-on:click="pathclick(imagepath.id,$event)">
+                            <div>{{imagepath.path}}</div>
+                            <div v-if="imagepath.metadata">{{imagepath.metadata.exif.DateTimeOriginal}}</div>
+                        </div> 
+                    </div>
+                    <div class="edit" v-if="selectedindex>-1">
+                        <div><h5>Build Template for New Filename for {{selectedpath}}</h5></div>
+                        <input type="text" v-model="pathtemplate"/>
+                        <div>( {{renderedpath}} )</div>
+                        <div class="buttonrow">
+                            <div>
+                                <label for="tagselect">File Tag</label>
+                                <select id="tagselect">
+                                    <option value="@root">Root</option>
+                                    <option value="@dir">Directory</option>
+                                    <option value="@name">File Name</option>
+                                    <option value="@ext">Extension</option>
+                                    <option value="@base">Base Name</option>
+                                    <option value="@sep">Folder Separator</option>                                    
+                                </select>
+                                <button v-on:click="insertValue" class="plus-button">+</button>                                
+                            </div>
+                            <div>
+                                <label for="catselect1">Category</label>
+                                <select id="catselect1">
+                                    <option v-bind:value="cat" v-for="cat in imagecategory">{{cat}}</option>
+                                </select>
+                                <button v-on:click="insertValue" class="plus-button">+</button>
+                            </div>
+                            <div>
+                                <label for="metaselect1">Photo Tags</label>
+                                <select id="metaselect1">
+                                    <option v-bind:title="value" v-bind:value="'@'+key" v-for="(value,key) in selectedmetadata">{{key}}</option>
+                                </select>
+                                <button v-on:click="insertValue">+</button>
+                            </div>
+                            <button data-section="copysinglesection" v-on:click="showDataSection">Copy</button>
+                            <button data-section="viewsection" v-on:click="showDataSection">View</button>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="foldersection" class="spa-section">
+                    <div class="list">
+                        <div v-bind:id="pathmode+'-'+dirpath.id" class="row" 
+                             v-for="dirpath in pathlist" v-on:click="pathclick(dirpath.id,$event)">
+                            <div>{{ dirpath.path }}</div>
+                        </div> 
+                    </div>
+                    <div class="busylist">Loading ...</div>                    
+                    <div class="edit" v-if="selectedindex>-1">
+                        <div><h5>Build New Filename Template to apply all files in selected folders {{selectedpath}}</h5></div>
+                        <input id="dirbuiltname" type="text" v-model="pathtemplate"/>
+                        <span>( {{renderedpath}} )</span>
+                        <div class="buttonrow">
+                            <div>
+                                <label for="catselect2">Category</label>
+                                <select>
+                                    <option id='catselect2' v-bind:value="cat" v-for="cat in imagecategory">{{cat}}</option>
+                                </select>
+                                <button v-on:click="insertValue" class="plus-button">+</button>
+                             </div>
+                        </div>
+                    </div>
+                </section>
+                <section id="copylistsection" class='spa-section'>
+                    <div class='list'>
+                        <div class="row" 
+                             v-for="(item,index) in pathlist" >
+                            <div>copy</div>
+                            <div>{{item.path}}</div>
+                            <div> to </div>
+                            <div>{{renderPathItem(item)}}</div>
+                        </div>
+                    </div>
+                </section>
+                <section id="copysinglesection" class='spa-section'>
+                    <div>
+                        <div>
+                            <h2>Confirm Copy</h2>
+                            <span>copy {{selectedpath}} to {{renderedpath}} ?</span>
+                            <button type='button' v-on:click='confirmCopyOk'>OK</button>
+                            <button type='button' v-on:click='backClick'>Cancel</button>
+                        </div>
+                    </div>
+                </section>
+                <section id="scriptsection" class='spa-section'>
+                        <div>Copy and paste-able script based on current template:{{pathtemplate}}</div>
+                        <div class="script">
+                            <div v-for="item in pathlist">
+                                copy /b /-y "{{item.path}}" "{{renderPathItem(item)}}"
+                            </div>
+                        </div>
+                        <button type='button' v-on:click='backClick'>Back</button>
+                </section>
+                <section id="viewsection" class="spa-section">
+                    <div class="photoframe">
+                        <img v-bind:src="selectedurl" >
+                        <button v-on:click='backClick'>Back</button>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </body>
+  </html>

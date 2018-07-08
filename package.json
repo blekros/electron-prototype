@@ -1,0 +1,22 @@
+{
+  "name": "e-photo-simple",
+  "version": "1.0.0",
+  "description": "simple photo manipulation",
+  "main": "main-entry.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "electron-packager . photocopier --out=../build/photocopier/dist --platform=win32 -arch=x64",
+    "backup": "cp -r . /p/apps/photocopier/"
+  },
+  "author": "beckrose",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^2.0.3",
+    "electron-packager": "^12.1.0"
+  },
+  "dependencies": {
+    "exif": "^0.6.0",
+    "vue": "^2.5.16"
+  }
+}
