@@ -9,33 +9,112 @@
                 box-sizing:border-box;
             }
 
-            body {
-                width:100%;
-                margin:0;
-                height:100%;
-                font-family:'Segoe UI';
-            }
-
-            div#mainapp {
-                display:flex;                
-                width:100%;
-            }
-             main.content {
-                flex:1;
-                position:relative;
-                overflow:hidden;
-            }
-
             footer, header, main,nav, section
             {
                 display:block;
             }
-            .content>.spa-section {
+
+            body {
+                margin:0;
+                font-family:'Segoe UI';
+            }
+
+            div#mainapp {
+                width:100%;
+                height:100%;
                 position:absolute;
-                top:0;
-                left:0;
-                right:0;
-                bottom:0;
+            }
+            
+            main.content {
+                width:75%;
+                position:relative;
+                float:left;
+            }
+
+            .nav {
+                position:relative;
+                float:left;                
+                width:25%;
+                height:100%;
+
+                overflow-x:hidden;
+                overflow-y:auto;
+                color: var(--color-subtle);
+                border-right: 1px solid var(--color-border);
+                background-color: var(--color-bg);
+            }
+
+            .nav-header {
+                position: relative;
+                padding: 2rem;
+                margin-bottom: 1rem;
+                border-bottom: 1px solid var(--color-border);
+            } 
+            
+            .nav-title {
+                text-transform: uppercase;
+                font-weight: 300;
+                line-height: 1;
+                margin: 0;
+            }
+
+            .nav-title strong {
+                font-weight: 600;
+                color: var(--color-strong);
+            }
+            
+            .nav-button{
+                display:block;
+                width:100%;
+                padding: .3rem;
+                padding-left: calc(2rem + 16px + .5rem); /* padding + icon + magic */
+                line-height: 2;
+                text-align: left;
+                font: inherit;
+                font-size: 13px;
+                color: inherit;
+                border: none;
+                background-color: transparent;
+                cursor: default;
+                outline: none;                
+            }
+            .nav-category {
+                margin: .2em 0;
+                padding-left: 2rem;
+                font-size: 11px;
+                font-weight: normal;
+                text-transform: uppercase;
+            }
+            .nav-button:hover,
+            .nav-button:focus:not(.is-selected) {
+                background-color: hsla(0,0%,0%,.1);
+            }
+            .nav-button.is-selected {
+                background-color: var(--color-accent);
+            }
+            .nav-button.is-selected,
+            .nav-button.is-selected em {
+                color: #fff;
+            }
+            .nav-button.is-selected:focus {
+                opacity: .8;
+            }
+            .nav-button em {
+                font-style: normal;
+                font-weight: 600;
+                color: var(--color-strong);
+                pointer-events: none; /* makes it invisible to clicks */
+            }   
+            .nav-footer {
+                margin-top: 1rem;
+                padding: 2rem;
+                border-top: 1px solid var(--color-border);
+                text-align: center;
+            } 
+                        
+            .content>.spa-section {
+                width:100%;
+                position:relative;
                 overflow:auto;
                 visibility:hidden;
                 display:none;
@@ -44,22 +123,6 @@
             .spa-section.is-shown {
                 visibility:visible;
                 display:block;
-            }
-            .nav {
-                width:25%;
-                overflow-x:hidden;
-                overflow-y:auto;
-                border-right:1px solid black;
-            }
-            .nav-button{
-                display:block;
-                width:100%;
-                padding:1em;
-            }
-
-            .nav-button.is-selected {
-                background-color:black;
-                color:white;
             }
 
             div.photoframe {
@@ -71,8 +134,12 @@
                 width:50%;
             }
             div.list {
+                position:relative;
                 overflow-y:auto;
                 height:340px;
+                width:100%;
+            }
+            div.list>div {
                 width:100%;
             }
             div.row>div { 
@@ -80,20 +147,17 @@
                 padding-left:1em;
             }
             .busylist {
-                display:none
-            }
-            .busylist.is-shown {
-                position:'absolute';
-                top:0;
-                left:0;
+                text-align:center;
+                display:none;
+                position:absolute;  
                 height:100%;
                 width:100%;
-                display:flex   ;             
-                justify-content:center;
-                align-items:center;
-                background-color:lightslategray;
+            }
+            .busylist.is-shown {
+                background-color: var(--color-subtle);
                 opacity:0.75;
                 animation: blink 3s linear infinite;
+                display:block
             }
             @keyframes blink {
                 50% {
@@ -123,25 +187,29 @@
             }
             div.edit {
                 width:100%;
+                border-top: 1px solid var(--color-border);
+                background-color: var(--color-bg);                
             }
             div.edit>input[type='text'] {
-                width:100%
+                width:50%
             }
             div.buttonrow {
-                font-size:9pt
-
+                font-size:9pt;
+                background-color:var(--color-bg);
+                color:var(--color-strong)
             }
             div.buttonrow>div, div.buttonrow>button { 
                 float:left;
                 padding-left:1em;
-                background-color:aquamarine;
             }
-            div.buttonrow>div:hover { 
-                background-color:aqua;
+            div.buttonrow div:hover, div.buttonrow button:hover { 
+                color:var(--color-strong);
+                background-color:transparent;
             }
             div.script {
                 overflow:auto;
-                background-color:thistle;
+                color:var(--color-strong);
+                background-color:var(--color-bg);
                 font-family:Courier, monospace;
                 font-size:8pt;
                 padding-left:1%;
@@ -158,7 +226,7 @@
     <body>
         <div id="mainapp">
             <nav class="nav is-shown" v-on:click='navClick'>
-                <header class="nav-header"><h1 class="nav-title">Simple E-Photo Copier</h1></header>
+                <header class="nav-header" title="Simple E-photo copier"><h1 class="nav-title">Copy JPEG Photos</h1></header>
                 <div class="nav-item">
                     <h4 class="nav-category">File Edits</h4>
                     <button v-on:click="openClick" type="button" data-section="filesection" class="nav-button">Select Files</button>
@@ -168,9 +236,12 @@
                 <div class="nav-item">
                     <h4 class="nav-category">Batch Edits</h4>
                     <button v-on:click='openFolderClick' type="button" data-section="foldersection" class="nav-button">Select Folder</button>
-                    <button type="button" data-section="pointertosectionid" class="nav-button">Copy</button>
+                    <button type="button" data-section="copyfoldersection" class="nav-button">Copy</button>
                     <button type="button" data-section="pointertosectionid" class="nav-button">New Folder</button>
-                </div>            
+                </div>
+                <footer class="nav-footer">
+                    <button type="button" data-section="aboutsection" class="nav-button">about</button>
+                </footer>         
             </nav>  
 
             <main class="content">  
@@ -180,35 +251,30 @@
                     <p>Select a command on the navigation panel or</p>
                     <button type="button" data-section="helpsection" v-on:click='showDataSection'>Show usage</button>
                 </section>
-                <section id="helpsection" class="spa-section">
-                    <h1>Basic Usage</h1>
-                    <ol>
-                        <li>Select files from navigation menu</li>
-                        <li>Click a file in the list of chosen files</li>
-                        <li>Manipulate the template in the editor panel at the bottom</li>
-                        <li>Use file and metadata tags to create a pattern with file-specific properties</li>
-                        <li>Use the category literals or type in the text box to add fixed strings</li>
-                        <li>Click Copy Script to see what will eventually happen</li>
-                    </ol>
-                    <button type="button" v-on:click='backClick'>Back</button>
-                </section>
+
                 <section id="filesection" class="spa-section">
                     <div class="list">
-                        <div class="busylist">Loading ...</div> 
+                        <div class="busylist">Loading...</div> 
                         <div v-bind:id="pathmode+'-'+imagepath.id" class="row" 
-                             v-for="imagepath in pathlist" v-on:click="pathclick(imagepath.id,$event)">
+                             v-for="imagepath in pathlist" v-on:click="pathClick(imagepath.id,$event)">
                             <div>{{imagepath.path}}</div>
                             <div v-if="imagepath.metadata">{{imagepath.metadata.exif.DateTimeOriginal}}</div>
+                        </div>
+                        <div v-if="pathlist.length>0" class="buttonrow">
+                            <h4>Edit List Selection</h4>
+                            <button v-on:click="addFilesClick" type="button" class="plus-button">+</button>
+                            <button v-if="selectedindex>-1" v-on:click="removeSelected" type="button" class="minus-button" title="Remove selected item from list">-</button>
+                            <button v-on:click="removeAll" type="button" class="minus-button" title="Remove all items from list">-all</button>
+                            <button v-if="selectedindex>-1" v-on:click='showInFolderClick(selectedpath,$event)' title='Show in Folder'>&#x1f50d;</button>
                         </div> 
                     </div>
                     <div class="edit" v-if="selectedindex>-1">
                         <div><h5>Build Template for New Filename for {{selectedpath}}</h5></div>
-                        <input type="text" v-model="pathtemplate"/>
-                        <div>( {{renderedpath}} )</div>
+                        <input type="text" v-model="pathtemplate" title="New filename template"/>
+                        <span title="Rendered template"> {{renderedpath}}</span>
                         <div class="buttonrow">
                             <div>
-                                <label for="tagselect">File Tag</label>
-                                <select id="tagselect">
+                                <select id="tagselect" title="File tags">
                                     <option value="@root">Root</option>
                                     <option value="@dir">Directory</option>
                                     <option value="@name">File Name</option>
@@ -216,43 +282,40 @@
                                     <option value="@base">Base Name</option>
                                     <option value="@sep">Folder Separator</option>                                    
                                 </select>
-                                <button v-on:click="insertValue" class="plus-button">+</button>                                
+                                <button v-on:click="insertValue" class="plus-button" title="Add file tag to template">+</button>                                
                             </div>
                             <div>
-                                <label for="catselect1">Category</label>
-                                <select id="catselect1">
+                                <select id="catselect1" title="Photo categories">
                                     <option v-bind:value="cat" v-for="cat in imagecategory">{{cat}}</option>
                                 </select>
-                                <button v-on:click="insertValue" class="plus-button">+</button>
+                                <button v-on:click="insertValue" class="plus-button" title="Add photo category label to template">+</button>
                             </div>
                             <div>
-                                <label for="metaselect1">Photo Tags</label>
-                                <select id="metaselect1">
+                                <select title="Photo tags" id="metaselect1">
                                     <option v-bind:title="value" v-bind:value="'@'+key" v-for="(value,key) in selectedmetadata">{{key}}</option>
                                 </select>
-                                <button v-on:click="insertValue">+</button>
+                                <button v-on:click="insertValue" title="Add photo metadata tag to template">+</button>
                             </div>
-                            <button data-section="copysinglesection" v-on:click="showDataSection">Copy</button>
-                            <button data-section="viewsection" v-on:click="showDataSection">View</button>
+                            <button data-section="copysinglesection" v-on:click="showDataSection" title="Copy the selected file">Copy</button>
+                            <button data-section="viewsection" v-on:click="showDataSection" title="Show photo">View</button>
                         </div>
                     </div>
                 </section>
 
                 <section id="foldersection" class="spa-section">
                     <div class="list">
+                        <div class="busylist">Loading...</div>
                         <div v-bind:id="pathmode+'-'+dirpath.id" class="row" 
-                             v-for="dirpath in pathlist" v-on:click="pathclick(dirpath.id,$event)">
+                             v-for="dirpath in pathlist" v-on:click="pathClick(dirpath.id,$event)">
                             <div>{{ dirpath.path }}</div>
                         </div> 
                     </div>
-                    <div class="busylist">Loading ...</div>                    
                     <div class="edit" v-if="selectedindex>-1">
                         <div><h5>Build New Filename Template to apply all files in selected folders {{selectedpath}}</h5></div>
                         <input id="dirbuiltname" type="text" v-model="pathtemplate"/>
                         <span>( {{renderedpath}} )</span>
                         <div class="buttonrow">
                             <div>
-                                <label for="catselect2">Category</label>
                                 <select>
                                     <option id='catselect2' v-bind:value="cat" v-for="cat in imagecategory">{{cat}}</option>
                                 </select>
@@ -263,6 +326,7 @@
                 </section>
                 <section id="copylistsection" class='spa-section'>
                     <div class='list'>
+                        <div class="busylist">Loading...</div>                        
                         <div class="row" 
                              v-for="(item,index) in pathlist" >
                             <div>copy</div>
@@ -271,14 +335,43 @@
                             <div>{{renderPathItem(item)}}</div>
                         </div>
                     </div>
+                    <div class="buttonrow">
+                        <button type='button' v-on:click='confirmCopyListOk'>OK</button>
+                        <button type='button' v-on:click='backClick'>Cancel</button>
+                    </div>
                 </section>
+                <section id="copyfoldersection" class='spa-section'>
+                    <div v-if="pathmode=='folder' && selectedpath && foldercontents.length != -1" >
+                        <h2>Confirm Folder Copy</h2>
+                        <div class='list'>
+                            <div class="busylist">Loading...</div>
+                            <div class='row' 
+                                v-for="(item,index) in foldercontents" >
+                                <div>copy {{item.path}} {{renderPathItem(item)}}</div>
+                            </div>
+                        </div>
+                        <div class="buttonrow">
+                                <button type='button' v-on:click='confirmCopyFolderOk'>OK</button>
+                                <button type='button' v-on:click='backClick'>Cancel</button>
+                                <span> {{foldercontents.length}} files in {{selectedpath}}</span>
+                        </div>
+                    </div> 
+                    <div v-else>
+                        <div>Folder operations not available in "file" mode</div>
+                        <button type='button' v-on:click='backClick'>Cancel</button>
+                    </div>                   
+                </section>                
                 <section id="copysinglesection" class='spa-section'>
                     <div>
                         <div>
                             <h2>Confirm Copy</h2>
-                            <span>copy {{selectedpath}} to {{renderedpath}} ?</span>
-                            <button type='button' v-on:click='confirmCopyOk'>OK</button>
-                            <button type='button' v-on:click='backClick'>Cancel</button>
+                            <div>
+                                <span>copy {{selectedpath}} to {{renderedpath}} ?</span>
+                            </div>
+                            <div class="buttonrow">
+                                <button type='button' v-on:click='confirmCopySingleOk'>OK</button>
+                                <button type='button' v-on:click='backClick'>Cancel</button>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -292,11 +385,34 @@
                         <button type='button' v-on:click='backClick'>Back</button>
                 </section>
                 <section id="viewsection" class="spa-section">
-                    <div class="photoframe">
+                    <div v-if="pathmode=='file'" class="photoframe">
                         <img v-bind:src="selectedurl" >
                         <button v-on:click='backClick'>Back</button>
                     </div>
                 </section>
+                <section id="helpsection" class="spa-section">
+                        <h1>Basic Usage</h1>
+                        <h5>File Edits</h5>
+                        <ol>
+                            <li>Click Select Files on the sidebar navigation menu</li>
+                            <li>Choose a set of JPEG files (.jpg) from the dialog</li>
+                            <li>Click an individual file to copy in the list of chosen files</li>
+                            <li>Click the View button to see the selected photo</li>
+                            <li>Edit the list as necessary to add or remove files</li>                        
+                            <li>Manipulate the template in the editor panel at the bottom</li>
+                            <li>Use file and metadata tags to create a pattern with file-specific properties</li>
+                            <li>Use the category literals or type in the text box to add fixed strings</li>
+                            <li>Click the Copy button to copy the selected file to a the new location using the template</li>
+                            <li>--OR-- Click Copy List in the sidebar menu to copy the entire list, applying the template to each file</li>
+                            <li>--OR-- Click Show Script in the sidebar menu to show a list of Windows copy commands</li>
+                        </ol>
+    
+                        <h5>TODO:   Folder Edits</h5>
+                        <ol>
+                            <li>Not completed</li>
+                        </ol>
+                        <button type="button" v-on:click='backClick'>Back</button>
+                    </section>                
             </main>
         </div>
     </body>

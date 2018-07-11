@@ -2,6 +2,7 @@
 const fs = require('fs')
 const path = require('path') 
 const electron = require('electron')
+const shell =electron.shell
 const exif = require('exif')
 const {ExifImage} = require('exif')
 const maincommands = electron.remote.getGlobal("maincommands")
@@ -128,6 +129,14 @@ function clearAllNavSelections () {
     }
 }
 
+function clearAllListSelections () {
+    const selectedrows = document.querySelectorAll('div.list div.row.is-selected')
+    if (selectedrows && selectedrows.length>0) {
+        selectedrows.forEach ((row)=>{
+            row.classList.remove('is-selected')
+        })
+    }
+}
 function hideAllSpaSections()
 {
     const sections = document.querySelectorAll('.spa-section.is-shown')
@@ -197,6 +206,7 @@ window.onload = function (){
     var app = new Vue ({
         el:'#mainapp',
         data: {
+            foldercontents:[],
             pathtemplate:'@root@DateTimeOriginal@sep@name@ext', //'@dir@sep@name@ext',
             pathmode:'',    // --- folder || file
             pathlist:[],
@@ -215,7 +225,12 @@ window.onload = function (){
                     return ''
                 }              
             },
+           
             selectedurl: function (){
+                if (!this.selectedpath || this.selectedpath === '') {
+                    return ''
+                }
+
                 var filepath = this.selectedpath
                 var url =  path.sep === '\\' ? 'file:///'.concat (filepath.replace(/\\/g,'/')):
                                             'file://'.concat(filepath)
@@ -234,7 +249,6 @@ window.onload = function (){
                         }
                     }
                 }
-                console.log(mergedmeta)
                 return mergedmeta                 
             },
             renderedpath: function ()
@@ -275,21 +289,42 @@ window.onload = function (){
             }
         },
         methods: {
-            pathclick: function (id, event){
+            pathClick: function (id, event){
                 console.log (id)    // array index 0-to-length-1
                 if ( id > -1 && id<app.pathlist.length) {
                     app.selectedindex = id
                     var elementid = app.pathmode + '-' + id
                     handleListSelection ( elementid )
+                    if (this.pathmode==="folder") {
+                        // load folder contents
+                        this.loadFolderContents(this.pathlist[id].path)
+                    }
                 }
             },
+
             openClick: function(event) {
                 handleSpaNavigation(event.target)
                 maincommands.openCommand(electron.remote.getCurrentWindow())    // call back into main process to show the open file dialog
             },
+            addFilesClick: function (event) {
+                maincommands.openCommand(electron.remote.getCurrentWindow())    // + button clicked
+            },
             openFolderClick: function(event) {
                 handleSpaNavigation(event.target)
                 maincommands.openFolderCommand(electron.remote.getCurrentWindow())      // call back into main process to show the open file dialog   
+            },
+            showInFolderClick: function (fullpath,event){
+                if (arguments.length !== 2) {
+                    alert (`Invalid number of arguments to showInFolderClick ${arguments.length}`)
+                    return
+                }
+                if (fullpath && fullpath.length>0)
+                {
+                    if ( !shell.showItemInFolder(fullpath))
+                    {
+                        alert (`Cannot show ${fullpath}` )
+                    }
+                }
             },
             navClick: function (event) {
                 handleSpaNavigation(event.target)
@@ -306,7 +341,24 @@ window.onload = function (){
                     showSpaSection(sectionid)
                 }
             },
-            confirmCopyOk : function (event) {
+            removeSelected:function() {
+                if (this.selectedindex > -1 && this.selectedindex < this.pathlist.length){
+                    this.pathlist.splice(this.selectedindex,1)
+                    clearAllListSelections()
+                    for (var i=this.selectedindex; i<this.pathlist.length; i++){
+                        console.log (this.pathlist[i].id )
+                        console.log (i)
+                        this.pathlist[i].id = i;
+                    }
+                    this.selectedindex = -1
+                }
+            },
+            removeAll:function () {
+                clearAllListSelections ()                
+                this.pathlist.splice(0);
+                this.selectedindex = -1;
+            },
+            confirmCopySingleOk : function (event) {
                 if (this.renderedpath === this.selectedpath) {
                     alert ("source and destination file are the same!")
                 }
@@ -314,10 +366,50 @@ window.onload = function (){
                     alert ("do a real copy here")
                 }
             },
-            renderPathItem(pathitem) {
+            confirmCopyListOk : function (event) {
+                alert ("do a real copy here")
+            },  
+            confirmCopyFolderOk : function (event) {
+                alert ("do a real copy here")
+            },
+            loadFolderContents: function (folder) {
+                    //updateBusyList(true) 
+                var files = fs.readdirSync(folder)  // reads only file name not full path
+                if (files.length === 0) {
+                    //updateBusyList(false)
+                    return
+                }
+                var newIndex = -1
+                // --- load the basic model into a cache array
+                var cache = []
+                for ( index in files ) {
+                    var file = files[index]
+                    var fullpath = path.join(folder,file)
+                    var parts = path.parse(file)
+                    if (parts.ext.toLowerCase() === '.jpg') {
+                        cache.splice(index,0,{ 'id':++newIndex, 'path':fullpath, 'metadata':emptyexifobj} )
+                    }
+                }
+                // --- set the model with the basics
+                this.foldercontents= cache
+
+                cache.forEach( (item,index)=> {
+                    new ExifImage( 
+                        {image:item.path}, 
+                        function(error,metadata){ 
+                            item.metadata=metadata
+                            console.log (item)
+                            app.foldercontents.splice(index,1, item )
+                        if ( index+1 >= files.length) {
+                                //updateBusyList(false)
+                        }
+                    }) 
+                })
+            },     
+            renderPathItem: function(pathitem) {
                 var rendered = this.pathtemplate 
 
-                if (pathitem.id >-1 &&  pathitem.id < this.pathlist.length){  
+                if (pathitem.id >-1 &&  pathitem.path){  
 
                     // --- get the component chunks of the input file path and extract template references into the rendered output path
                     var pathobj = path.parse (pathitem.path)                
