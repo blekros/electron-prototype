@@ -10,12 +10,12 @@ The eventual goal is to run it through tensorflowjs image classifiers and provid
 
 ## Install
 
->>git clone the repo or copy the zip file and extract
->>cd extract location - contains package.json
->>npm install
->>npm start
-or
->>npm build
++git clone the repo or copy the zip file and extract  
++cd extract location - contains package.json  
++npm install  
++npm start  
+or  
++npm build  
 
 npm start will show the GUI and npm build will make a windows binary in ../build
 
